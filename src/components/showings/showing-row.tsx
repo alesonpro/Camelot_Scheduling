@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TimeSelect } from "@/components/ui/time-select";
 import { formatDate, formatTime } from "@/lib/utils/datetime";
 import {
   cancelShowingAction,
@@ -95,14 +96,7 @@ export function ShowingRow({ showing }: { showing: ShowingRowData }) {
             <label className="text-xs text-muted-foreground" htmlFor={`time-${showing.id}`}>
               New time
             </label>
-            <input
-              id={`time-${showing.id}`}
-              type="time"
-              name="time"
-              defaultValue={showing.time}
-              required
-              className={timeInputClass}
-            />
+            <TimeSelect id={`time-${showing.id}`} name="time" defaultValue={showing.time} required />
           </div>
           <Button type="submit" size="sm" disabled={reschedulePending}>
             {reschedulePending ? "Saving…" : "Save new time"}

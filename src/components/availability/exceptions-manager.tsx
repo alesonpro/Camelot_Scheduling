@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TimeSelect } from "@/components/ui/time-select";
 import type { Database } from "@/lib/db/types";
 import { formatDate, formatTime } from "@/lib/utils/datetime";
 import {
@@ -22,8 +23,6 @@ type AdminScope = { agentId: string; returnPath: string };
 
 const initialState: ActionState = { error: null };
 
-const timeInputClass =
-  "h-8 rounded-lg border border-input bg-transparent px-2 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 const selectClass =
   "h-8 rounded-lg border border-input bg-transparent px-2 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
@@ -136,11 +135,11 @@ function AddExceptionForm({ scope }: { scope?: AdminScope }) {
           <>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="exception-start">From</Label>
-              <input id="exception-start" type="time" name="startTime" className={timeInputClass} />
+              <TimeSelect id="exception-start" name="startTime" />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="exception-end">To</Label>
-              <input id="exception-end" type="time" name="endTime" className={timeInputClass} />
+              <TimeSelect id="exception-end" name="endTime" />
             </div>
           </>
         )}

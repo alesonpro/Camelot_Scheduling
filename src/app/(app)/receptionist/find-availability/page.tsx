@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { TimeSelect } from "@/components/ui/time-select";
 import {
   findNextAvailableSlots,
   searchAgentAvailability,
@@ -99,7 +100,7 @@ export default async function FindAvailabilityPage({ searchParams }: { searchPar
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="time">Time</Label>
-                <input id="time" type="time" name="time" defaultValue={time} required className={timeInputClass} />
+                <TimeSelect id="time" name="time" defaultValue={time} required />
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="duration">Duration</Label>

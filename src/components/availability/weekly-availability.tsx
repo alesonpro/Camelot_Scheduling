@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { TimeSelect } from "@/components/ui/time-select";
 import type { Database } from "@/lib/db/types";
 import { DAY_NAMES, formatTime } from "@/lib/utils/datetime";
 import {
@@ -21,9 +22,6 @@ const initialState: ActionState = { error: null };
 // Monday-first display order, matching the CLAUDE.md §6/§38 example, even
 // though day_of_week is stored Sunday-first (0) to match Postgres/JS convention.
 const WEEK_DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
-
-const timeInputClass =
-  "h-8 rounded-lg border border-input bg-transparent px-2 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export function WeeklyAvailability({ rules, scope }: { rules: Rule[]; scope?: AdminScope }) {
   return (
@@ -119,9 +117,9 @@ function AddRuleForm({ dayOfWeek, scope }: { dayOfWeek: number; scope?: AdminSco
     <form key={formKey} action={formAction} className="flex flex-wrap items-center gap-1.5">
       <input type="hidden" name="dayOfWeek" value={dayOfWeek} />
       <ScopeFields scope={scope} />
-      <input type="time" name="startTime" required className={timeInputClass} aria-label="Start time" />
+      <TimeSelect name="startTime" required aria-label="Start time" />
       <span className="text-sm text-muted-foreground">to</span>
-      <input type="time" name="endTime" required className={timeInputClass} aria-label="End time" />
+      <TimeSelect name="endTime" required aria-label="End time" />
       <Button type="submit" size="sm" disabled={pending}>
         {pending ? "Saving…" : "Save"}
       </Button>
