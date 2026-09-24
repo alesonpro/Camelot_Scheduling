@@ -1,0 +1,8 @@
+-- After creating your first user (via the Supabase dashboard's
+-- Authentication > Users > "Add user", with a password set directly),
+-- promote them to admin by running:
+--
+-- update public.users set role = 'admin' where email = 'you@example.com';
+--
+-- Left commented out on purpose — this migration intentionally does nothing
+-- when applied as-is.
