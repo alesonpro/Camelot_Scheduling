@@ -5,7 +5,8 @@ import { useActionState, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TimeSelect } from "@/components/ui/time-select";
-import { formatDate, formatTime } from "@/lib/utils/datetime";
+import { DEFAULT_TIMEZONE } from "@/lib/config/app-config";
+import { formatDate, formatTime, todayInTimezone } from "@/lib/utils/datetime";
 import {
   cancelShowingAction,
   rescheduleShowingAction,
@@ -88,6 +89,7 @@ export function ShowingRow({ showing }: { showing: ShowingRowData }) {
               type="date"
               name="date"
               defaultValue={showing.date}
+              min={todayInTimezone(DEFAULT_TIMEZONE)}
               required
               className={timeInputClass}
             />

@@ -96,7 +96,15 @@ export default async function FindAvailabilityPage({ searchParams }: { searchPar
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="date">Date</Label>
-                <input id="date" type="date" name="date" defaultValue={date} required className={timeInputClass} />
+                <input
+                  id="date"
+                  type="date"
+                  name="date"
+                  defaultValue={date}
+                  min={todayInTimezone(DEFAULT_TIMEZONE)}
+                  required
+                  className={timeInputClass}
+                />
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="time">Time</Label>

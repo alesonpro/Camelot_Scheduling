@@ -10,6 +10,7 @@ type Showing = Database["public"]["Tables"]["showings"]["Row"];
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const CONFLICT_ERROR = "This agent is no longer available for this time. Please choose another agent or time.";
+const PAST_TIME_ERROR = "That time has already passed. Please choose a time in the future.";
 // Postgres exclusion_violation — the last-resort safety net when two
 // requests race past the availability check above (CLAUDE.md §9).
 const EXCLUSION_VIOLATION_CODE = "23P01";
@@ -48,6 +49,10 @@ export async function createShowing(
     notes: string | null;
   },
 ): Promise<ServiceResult<{ showingId: string }>> {
+  if (new Date(input.startIso).getTime() < Date.now()) {
+    return { data: null, error: PAST_TIME_ERROR };
+  }
+
   const available = await isAgentAvailableForRange(supabase, input.agentId, input.startIso, input.endIso);
   if (!available) {
     return { data: null, error: CONFLICT_ERROR };
@@ -141,6 +146,10 @@ export async function rescheduleShowing(
 
   if (!showing) {
     return { data: null, error: GENERIC_ERROR };
+  }
+
+  if (new Date(input.startIso).getTime() < Date.now()) {
+    return { data: null, error: PAST_TIME_ERROR };
   }
 
   const available = await isAgentAvailableForRange(
