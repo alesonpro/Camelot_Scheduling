@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AppNav } from "@/components/layout/app-nav";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { navItemsForRole } from "@/components/layout/role-nav-items";
 import { dashboardPathForRole } from "@/lib/auth/roles";
@@ -21,7 +22,10 @@ export function AppHeader({ profile }: { profile: UserProfile }) {
           </Link>
           <AppNav items={items} />
         </div>
-        <UserMenu name={profile.name} email={profile.email} />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <UserMenu name={profile.name} email={profile.email} />
+        </div>
       </div>
     </header>
   );
