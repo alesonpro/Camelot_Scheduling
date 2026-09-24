@@ -25,7 +25,10 @@ export default async function AdminDashboardPage() {
             {showings.length === 1 ? "" : "s"}
           </p>
           <div className="flex flex-wrap gap-2">
-            <Link href="/admin/agents" className={buttonVariants({ className: "w-fit" })}>
+            <Link href="/receptionist/find-availability" className={buttonVariants({ className: "w-fit" })}>
+              Find Availability
+            </Link>
+            <Link href="/admin/agents" className={buttonVariants({ variant: "outline", className: "w-fit" })}>
               Manage Agents
             </Link>
             <Link href="/admin/properties" className={buttonVariants({ variant: "outline", className: "w-fit" })}>

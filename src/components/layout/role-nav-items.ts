@@ -20,6 +20,10 @@ export function navItemsForRole(role: Role): NavItem[] {
 
   if (role === "admin") {
     items.push(
+      // Booking itself has no separate admin page — admins are allowed on
+      // the receptionist routes (see ROLE_ROUTE_PREFIXES), so reuse them
+      // rather than duplicating the search/booking flow.
+      { label: "Find Availability", href: "/receptionist/find-availability" },
       { label: "Agents", href: "/admin/agents" },
       { label: "Properties", href: "/admin/properties" },
       { label: "Showings", href: "/admin/showings" },
