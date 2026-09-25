@@ -1,44 +1,52 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShowingRow, type ShowingRowData } from "@/components/showings/showing-row";
+import { ShowingRow } from "@/components/showings/showing-row";
+import { ShowingHistoryTable } from "@/components/showings/showing-history-table";
+import { ShowingsPropertyFilter } from "@/components/showings/showings-property-filter";
+import { ShowingsTabs, type ShowingsTab } from "@/components/showings/showings-tabs";
 import { createClient } from "@/lib/supabase/server";
-import { listUpcomingShowings } from "@/lib/services/showing-service";
-import { DEFAULT_TIMEZONE } from "@/lib/config/app-config";
-import { dateStringInTimezone, minutesOfDayInTimezone, minutesToTime } from "@/lib/utils/datetime";
+import { listPastShowings, listUpcomingShowings } from "@/lib/services/showing-service";
+import { listActiveProperties } from "@/lib/services/property-service";
+import { toShowingRowData } from "@/lib/utils/showings";
 
-export default async function AdminShowingsPage() {
+type SearchParams = Promise<{ tab?: string; property?: string }>;
+
+export default async function AdminShowingsPage({ searchParams }: { searchParams: SearchParams }) {
+  const { tab, property } = await searchParams;
+  const activeTab: ShowingsTab = tab === "past" ? "past" : "upcoming";
+  const propertyId = property || "";
   const supabase = await createClient();
-  const showings = await listUpcomingShowings(supabase);
-
-  const rows: ShowingRowData[] = showings.map((showing) => {
-    const date = dateStringInTimezone(showing.start_time, DEFAULT_TIMEZONE);
-    const time = minutesToTime(minutesOfDayInTimezone(showing.start_time, DEFAULT_TIMEZONE));
-    const endTime = minutesToTime(minutesOfDayInTimezone(showing.end_time, DEFAULT_TIMEZONE));
-    const durationMinutes = (new Date(showing.end_time).getTime() - new Date(showing.start_time).getTime()) / 60_000;
-
-    return {
-      id: showing.id,
-      agentName: showing.agent?.name ?? "Unknown agent",
-      propertyLabel: showing.property
-        ? `${showing.property.property_name ? `${showing.property.property_name} — ` : ""}${showing.property.address}`
-        : "Unknown property",
-      prospectName: showing.prospect?.name ?? "Unknown prospect",
-      prospectContact: showing.prospect?.phone || showing.prospect?.email || "No contact on file",
-      date,
-      time,
-      endTime,
-      durationMinutes,
-      status: showing.status,
-    };
-  });
+  const [properties, showings] = await Promise.all([
+    listActiveProperties(supabase),
+    activeTab === "past"
+      ? listPastShowings(supabase, { propertyId: propertyId || undefined })
+      : listUpcomingShowings(supabase, { propertyId: propertyId || undefined }),
+  ]);
+  const rows = showings.map(toShowingRowData);
+  const selectedProperty = properties.find((p) => p.id === propertyId);
+  const selectedPropertyLabel = selectedProperty
+    ? `${selectedProperty.property_name ? `${selectedProperty.property_name} — ` : ""}${selectedProperty.address}`
+    : undefined;
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <ShowingsTabs activeTab={activeTab} basePath="/admin/showings" propertyId={propertyId || undefined} />
+        <ShowingsPropertyFilter
+          properties={properties}
+          propertyId={propertyId}
+          activeTab={activeTab}
+          basePath="/admin/showings"
+        />
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>All Upcoming Showings</CardTitle>
+          <CardTitle>{activeTab === "past" ? "Past Showings" : "All Upcoming Showings"}</CardTitle>
         </CardHeader>
         <CardContent>
-          {rows.length === 0 ? (
+          {activeTab === "past" ? (
+            <ShowingHistoryTable rows={rows} propertyLabel={selectedPropertyLabel} />
+          ) : rows.length === 0 ? (
             <p className="text-sm text-muted-foreground">No showings scheduled.</p>
           ) : (
             <ul className="flex flex-col divide-y divide-border">

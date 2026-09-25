@@ -187,13 +187,48 @@ export async function rescheduleShowing(
 }
 
 /** All active, upcoming showings — the receptionist/admin view (CLAUDE.md §4). */
-export async function listUpcomingShowings(supabase: SupabaseClient<Database>): Promise<ShowingWithDetails[]> {
-  const { data } = await supabase
+export async function listUpcomingShowings(
+  supabase: SupabaseClient<Database>,
+  options?: { propertyId?: string },
+): Promise<ShowingWithDetails[]> {
+  let query = supabase
     .from("showings")
     .select(SHOWING_WITH_DETAILS_SELECT)
     .neq("status", "cancelled")
     .gte("end_time", new Date().toISOString())
     .order("start_time");
+
+  if (options?.propertyId) {
+    query = query.eq("property_id", options.propertyId);
+  }
+
+  const { data } = await query;
+
+  return (data as unknown as ShowingWithDetails[] | null) ?? [];
+}
+
+/**
+ * Past, non-cancelled showings — most recent first. Capped at `limit` so a
+ * growing history never loads the whole table into the browser (CLAUDE.md
+ * §26).
+ */
+export async function listPastShowings(
+  supabase: SupabaseClient<Database>,
+  options?: { propertyId?: string; limit?: number },
+): Promise<ShowingWithDetails[]> {
+  let query = supabase
+    .from("showings")
+    .select(SHOWING_WITH_DETAILS_SELECT)
+    .neq("status", "cancelled")
+    .lt("end_time", new Date().toISOString())
+    .order("start_time", { ascending: false })
+    .limit(options?.limit ?? 200);
+
+  if (options?.propertyId) {
+    query = query.eq("property_id", options.propertyId);
+  }
+
+  const { data } = await query;
 
   return (data as unknown as ShowingWithDetails[] | null) ?? [];
 }

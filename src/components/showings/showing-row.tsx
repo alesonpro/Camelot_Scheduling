@@ -29,6 +29,7 @@ export type ShowingRowData = {
   endTime: string;
   durationMinutes: number;
   status: string;
+  notes: string | null;
 };
 
 export function ShowingRow({ showing }: { showing: ShowingRowData }) {
