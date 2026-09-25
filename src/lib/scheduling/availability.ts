@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/db/types";
@@ -211,12 +212,14 @@ type AgentContext = {
 /**
  * Bulk-fetches every active agent plus their rules/exceptions/nearby
  * bookings for one date in a handful of queries (not one round-trip per
- * agent — CLAUDE.md §26), for the receptionist search screens.
+ * agent — CLAUDE.md §26), for the receptionist search screens. Wrapped in
+ * cache() since searchAgentAvailability and findNextAvailableSlots are
+ * sometimes both called for the same date within one request.
  */
-async function fetchActiveAgentContexts(
+const fetchActiveAgentContexts = cache(async (
   supabase: SupabaseClient<Database>,
   date: string,
-): Promise<AgentContext[]> {
+): Promise<AgentContext[]> => {
   const dayOfWeek = dayOfWeekForDate(date);
 
   const [{ data: agents }, { data: rules }, { data: exceptions }, { data: bookings }] = await Promise.all([
@@ -242,7 +245,7 @@ async function fetchActiveAgentContexts(
     exceptions: (exceptions ?? []).filter((exception) => exception.agent_id === agent.id),
     bookings: (bookings ?? []).filter((booking) => booking.agent_id === agent.id),
   }));
-}
+});
 
 export type AgentAvailabilityStatus = "available" | "busy" | "unavailable";
 
