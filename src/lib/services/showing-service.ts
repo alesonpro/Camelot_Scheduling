@@ -186,10 +186,68 @@ export async function rescheduleShowing(
   return { data: undefined, error: null };
 }
 
+/**
+ * Resolves prospect ids whose name or phone matches `search`, for filtering
+ * showings by the one thing a receptionist actually remembers about a past
+ * prospect. Commas/parens are stripped since they'd otherwise break the
+ * `.or()` filter's syntax.
+ */
+async function matchingProspectIds(supabase: SupabaseClient<Database>, search: string): Promise<string[]> {
+  const term = search.replace(/[,()]/g, " ").trim();
+  if (!term) {
+    return [];
+  }
+
+  const { data } = await supabase
+    .from("prospects")
+    .select("id")
+    .or(`name.ilike.%${term}%,phone.ilike.%${term}%`);
+
+  return (data ?? []).map((prospect) => prospect.id);
+}
+
+/** Same as matchingProspectIds, but for property address/name — a receptionist may as easily search by the property. */
+async function matchingPropertyIds(supabase: SupabaseClient<Database>, search: string): Promise<string[]> {
+  const term = search.replace(/[,()]/g, " ").trim();
+  if (!term) {
+    return [];
+  }
+
+  const { data } = await supabase
+    .from("properties")
+    .select("id")
+    .or(`address.ilike.%${term}%,property_name.ilike.%${term}%`);
+
+  return (data ?? []).map((property) => property.id);
+}
+
+/**
+ * Builds the `.or()` filter string matching showings whose prospect or
+ * property matches `search`, or `null` if nothing matches either — the
+ * caller should return no results rather than call `.or("")` (which would
+ * match everything).
+ */
+async function buildSearchFilter(supabase: SupabaseClient<Database>, search: string): Promise<string | null> {
+  const [prospectIds, propertyIds] = await Promise.all([
+    matchingProspectIds(supabase, search),
+    matchingPropertyIds(supabase, search),
+  ]);
+
+  if (prospectIds.length === 0 && propertyIds.length === 0) {
+    return null;
+  }
+
+  const orParts: string[] = [];
+  if (prospectIds.length > 0) orParts.push(`prospect_id.in.(${prospectIds.join(",")})`);
+  if (propertyIds.length > 0) orParts.push(`property_id.in.(${propertyIds.join(",")})`);
+
+  return orParts.join(",");
+}
+
 /** All active, upcoming showings — the receptionist/admin view (CLAUDE.md §4). */
 export async function listUpcomingShowings(
   supabase: SupabaseClient<Database>,
-  options?: { propertyId?: string },
+  options?: { propertyId?: string; search?: string },
 ): Promise<ShowingWithDetails[]> {
   let query = supabase
     .from("showings")
@@ -200,6 +258,14 @@ export async function listUpcomingShowings(
 
   if (options?.propertyId) {
     query = query.eq("property_id", options.propertyId);
+  }
+
+  if (options?.search) {
+    const orFilter = await buildSearchFilter(supabase, options.search);
+    if (!orFilter) {
+      return [];
+    }
+    query = query.or(orFilter);
   }
 
   const { data } = await query;
@@ -214,7 +280,7 @@ export async function listUpcomingShowings(
  */
 export async function listPastShowings(
   supabase: SupabaseClient<Database>,
-  options?: { propertyId?: string; limit?: number },
+  options?: { propertyId?: string; search?: string; limit?: number },
 ): Promise<ShowingWithDetails[]> {
   let query = supabase
     .from("showings")
@@ -226,6 +292,14 @@ export async function listPastShowings(
 
   if (options?.propertyId) {
     query = query.eq("property_id", options.propertyId);
+  }
+
+  if (options?.search) {
+    const orFilter = await buildSearchFilter(supabase, options.search);
+    if (!orFilter) {
+      return [];
+    }
+    query = query.or(orFilter);
   }
 
   const { data } = await query;

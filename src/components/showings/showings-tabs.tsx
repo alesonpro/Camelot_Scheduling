@@ -9,10 +9,12 @@ export function ShowingsTabs({
   activeTab,
   basePath,
   propertyId,
+  search,
 }: {
   activeTab: ShowingsTab;
   basePath: string;
   propertyId?: string;
+  search?: string;
 }) {
   const tabs: { key: ShowingsTab; label: string }[] = [
     { key: "upcoming", label: "Upcoming" },
@@ -23,6 +25,7 @@ export function ShowingsTabs({
     const params = new URLSearchParams();
     if (tab === "past") params.set("tab", "past");
     if (propertyId) params.set("property", propertyId);
+    if (search) params.set("q", search);
     const query = params.toString();
     return query ? `${basePath}?${query}` : basePath;
   };

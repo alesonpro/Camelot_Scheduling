@@ -4,15 +4,15 @@ import type { ShowingRowData } from "@/components/showings/showing-row";
 
 export function ShowingHistoryTable({
   rows,
-  propertyLabel,
+  filterDescription,
 }: {
   rows: ShowingRowData[];
-  propertyLabel?: string;
+  filterDescription?: string;
 }) {
   if (rows.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        {propertyLabel ? `No past showings for ${propertyLabel}.` : "No past showings yet."}
+        {filterDescription ? `No past showings ${filterDescription}.` : "No past showings yet."}
       </p>
     );
   }

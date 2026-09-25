@@ -26,3 +26,11 @@ export function toShowingRowData(showing: ShowingWithDetails): ShowingRowData {
     notes: showing.notes,
   };
 }
+
+/** The one place the Past-showings empty-state copy is built (CLAUDE.md §25/§30), for both the admin and receptionist pages. */
+export function describePastShowingsFilter(options: { propertyLabel?: string; search?: string }): string | undefined {
+  const parts: string[] = [];
+  if (options.search) parts.push(`matching "${options.search}"`);
+  if (options.propertyLabel) parts.push(`for ${options.propertyLabel}`);
+  return parts.length > 0 ? parts.join(" ") : undefined;
+}
